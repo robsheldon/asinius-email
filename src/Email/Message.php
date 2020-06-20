@@ -277,7 +277,7 @@ class Message
             $this->raw_header = '';
             //  Attempt to retrieve message header from imap connection if available.
             if ( ! is_null($this->_imap_connection) && is_array($this->_message_id) && isset($this->_message_id['uid']) ) {
-                $this->raw_header = $this->_imap_connection->retrieve_message_header($this->_message_id['path'], $this->_message_id['uid']);
+                $this->raw_header = $this->_imap_connection->get_message_headers($this->_message_id['path'], $this->_message_id['uid']);
             }
             $this->_lock_property('raw_header');
         }
@@ -466,6 +466,37 @@ class Message
         }
         else {
             $this->headers[$name] = [$this->headers[$name], $value];
+        }
+    }
+
+
+    /**
+     * Return the size, in bytes, of this message. If the message is currently in
+     * STDIN or some other resource, this function will cause it to be read in its
+     * entirety (since there's no other way to count the number of bytes in an
+     * email).
+     *
+     * The value returned by this function isn't perfectly accurate! Email messages
+     * get transformed while en route, with line breaks added or removed and some
+     * content encoded in one way or another. This function only counts the number
+     * of bytes in the current headers + body, with no added line breaks. It will
+     * give you an approximation of the final message size.
+     *
+     * @return  int
+     */
+    public function get_size ()
+    {
+        if ( ! is_null($this->_imap_connection) && is_array($this->_message_id) && isset($this->_message_id['uid']) ) {
+            //  Retrieve the message structure info from the imap connection.
+            $message_info = $this->_imap_connection->get_message_structure($this->_message_id['path'], $this->_message_id['uid']);
+        }
+        else if ( is_resource($this->raw_body) ) {
+            //  TODO / In progress
+            ;
+        }
+        else if ( is_string($this->raw_body) ) {
+            //  TODO / In progress
+            ;
         }
     }
 
