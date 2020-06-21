@@ -512,6 +512,13 @@ class Message
         if ( $bytes == 0 && is_string($this->raw_body) ) {
             $bytes = strlen($this->raw_body);
         }
+        //  Add the size of the headers.
+        $bytes += array_sum(array_map(function($header){
+            if ( is_array($header) ) {
+                return strlen(implode("\n", $header));
+            }
+            return strlen($header);
+        }, $this->headers));
         $this->size = $bytes;
         $this->_lock_property('size');
         return $bytes;
