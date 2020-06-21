@@ -486,18 +486,35 @@ class Message
      */
     public function get_size ()
     {
+        $bytes = 0;
         if ( ! is_null($this->_imap_connection) && is_array($this->_message_id) && isset($this->_message_id['uid']) ) {
             //  Retrieve the message structure info from the imap connection.
             $message_info = $this->_imap_connection->get_message_structure($this->_message_id['path'], $this->_message_id['uid']);
+            if ( isset($message_info['bytes']) ) {
+                $bytes += $message_info['bytes'];
+            }
+            if ( isset($message_info['parts']) && is_array($message_info['parts']) ) {
+                foreach ($message_info['parts'] as $part) {
+                    if ( isset($part['bytes']) ) {
+                        $bytes += $part['bytes'];
+                    }
+                }
+            }
         }
-        else if ( is_resource($this->raw_body) ) {
-            //  TODO / In progress
-            ;
+        if ( $bytes == 0 && is_resource($this->raw_body) ) {
+            $body = '';
+            while ( ($chunk = fread($this->raw_body)) !== false ) {
+                $body .= $chunk;
+            }
+            fclose($this->raw_body);
+            $this->raw_body = $body;
         }
-        else if ( is_string($this->raw_body) ) {
-            //  TODO / In progress
-            ;
+        if ( $bytes == 0 && is_string($this->raw_body) ) {
+            $bytes = strlen($this->raw_body);
         }
+        $this->size = $bytes;
+        $this->_lock_property('size');
+        return $bytes;
     }
 
 
