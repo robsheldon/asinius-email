@@ -178,7 +178,7 @@ class Message
      */
     protected function _fold_headers ($headers)
     {
-        $break_lines_on = [' with ' => 'before', ' on ' => 'before', '; ' => 'after', '(' => 'before', ')' => 'after', ',' => 'after', ' ' => 'after', ':' => 'before'];
+        $break_lines_on = [' with ' => 'before', ' on ' => 'before', '; ' => 'after', '(' => 'before', ')' => 'after', ',' => 'after', ' ' => 'after', ';' => 'after', '>' => 'after'];
         $lines = [];
         foreach ($headers as $header) {
             while ( strlen($header) > 78 ) {
@@ -600,10 +600,11 @@ class Message
         foreach ($header_lines as $line) {
             $writef("$line\n");
         }
+        $writef("\n");
         while ( ($chunk = $readf()) !== false ) {
             $writef($chunk);
             if ( substr($chunk, -1) != "\n" ) {
-                $outf("\n");
+                $writef("\n");
             }
         }
     }
