@@ -149,13 +149,13 @@ class Message
             $line = $lines[$i];
             //  Check the next header line and "unfold" it if it appears to belong
             //  to the current line.
-            while ( ($i + 1) < $n && strspn($lines[$i+1], " \t") > 0 ) {
+            while ( ($i+1) < $n && strspn($lines[$i+1], " \t") > 0 ) {
                 //  This gets a little tricky. RFC 5322
                 //  (https://tools.ietf.org/html/rfc5322#section-2.2.3)
                 //  does not provide guidance on how to handle long unbroken lines
                 //  without obvious delimiters. Some guesswork is done here to
                 //  choose whether to unfold the line with or without whitespace.
-                if ( strlen($lines[$i]) >= 78 || strspn(substr($lines[$i+1], -1), ' ') > 0 ) {
+                if ( strlen($lines[$i]) >= 78 || substr($lines[$i], -1) == ' ' ) {
                     $line .= ltrim($lines[++$i]);
                 }
                 else {
@@ -232,12 +232,13 @@ class Message
             //  Assume that the message could be tens of MB.
             $headers = [];
             while ( ($line = fgets($content)) !== false ) {
-                if ( strlen(trim($line, "\r\n")) == 0 ) {
+                $line = trim($line, "\r\n");
+                if ( strlen($line) == 0 ) {
                     break;
                 }
                 $headers[] = $line;
             }
-            $this->raw_header = implode('', $headers);
+            $this->raw_header = implode("\n", $headers);
             //  $raw_body is left pointing to the connected resource so that
             //  big messages don't have to be loaded into PHP's heap if the
             //  message content isn't going to be modified.
