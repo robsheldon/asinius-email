@@ -286,7 +286,12 @@ class Message
         $headers->set_case_insensitive();
         $lines = $this->_unfold_headers(preg_split('/(\r\n)|\r|\n/', $this->raw_header));
         foreach ($lines as $line) {
-            list($fieldname, $fieldbody) = explode(': ', $line, 2);
+            if ( strpos($line, ':') === false ) {
+                //  Invalid header; ignore it.
+                continue;
+            }
+            list($fieldname, $fieldbody) = explode(':', $line, 2);
+            $fieldbody = ltrim($fieldbody);
             //  https://tools.ietf.org/html/rfc2822#section-2.2
             //  A -ton- of applications use dashes in fieldnames, so no special
             //  translation is done to fieldnames.
